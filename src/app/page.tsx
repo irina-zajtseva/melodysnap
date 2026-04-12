@@ -1,5 +1,6 @@
 // src/app/page.tsx
 import RecordButton from "@/components/RecordButton";
+import ProjectList from "@/components/ProjectList";
 
 export default function Home() {
   return (
@@ -56,25 +57,16 @@ export default function Home() {
         <RecordButton />
       </section>
 
-      {/* Recent Projects — placeholder for now */}
-      <section
-        style={{
-          width: "100%",
-          maxWidth: "500px",
-          padding: "0 1.5rem 2rem",
-        }}
-      >
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: "0.9rem",
-            color: "var(--color-amber)",
-            opacity: 0.7,
-          }}
-        >
-          Your saved ideas will appear here
-        </p>
-      </section>
+      {/* Recent Projects */}
+<section
+  style={{
+    width: "100%",
+    maxWidth: "500px",
+    padding: "0 1.5rem 2rem",
+  }}
+>
+  <ProjectList />
+</section>
     </main>
   );
 }

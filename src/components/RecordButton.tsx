@@ -7,6 +7,7 @@ export default function RecordButton() {
   const {
     status,
     audioURL,
+    audioBlob,
     duration,
     startRecording,
     stopRecording,
@@ -190,21 +191,47 @@ export default function RecordButton() {
               Try Again
             </button>
             <button
-              onClick={() => alert("Save coming next!")}
-              style={{
-                padding: "0.75rem 1.5rem",
-                borderRadius: "12px",
-                border: "none",
-                backgroundColor: "#E07A5F",
-                color: "white",
-                fontWeight: "600",
-                fontSize: "0.9rem",
-                cursor: "pointer",
-                fontFamily: "Georgia, serif",
-              }}
-            >
-              Keep This Idea
-            </button>
+              onClick={async () => {
+              if (!audioBlob) return;
+
+              const formData = new FormData();
+              formData.append("audio", audioBlob, "recording.webm");
+              formData.append("title", "Untitled Idea");
+              formData.append("duration", duration.toString());
+
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("Idea saved! ✨");
+        resetRecording();
+        // Reload to show in project list
+        window.location.reload();
+      } else {
+        alert("Failed to save. Try again!");
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Failed to save. Try again!");
+    }
+  }}
+  style={{
+    padding: "0.75rem 1.5rem",
+    borderRadius: "12px",
+    border: "none",
+    backgroundColor: "#E07A5F",
+    color: "white",
+    fontWeight: "600",
+    fontSize: "0.9rem",
+    cursor: "pointer",
+    fontFamily: "Georgia, serif",
+  }}
+>
+  Keep This Idea
+</button>
           </div>
         </div>
       )}
