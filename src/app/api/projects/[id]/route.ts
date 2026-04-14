@@ -30,3 +30,39 @@ export async function DELETE(
     );
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+
+    const updateFields: Record<string, unknown> = {};
+    if (body.title) updateFields.title = body.title;
+    updateFields.updatedAt = new Date();
+
+    const result = await db
+      .collection("projects")
+      .updateOne({ id }, { $set: updateFields });
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to update project:", error);
+    return NextResponse.json(
+      { error: "Failed to update project" },
+      { status: 500 }
+    );
+  }
+}

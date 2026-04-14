@@ -20,6 +20,8 @@ export default function ProjectDetail({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
 
   useEffect(() => {
     fetch(`/api/projects/${id}/details`)
@@ -82,6 +84,44 @@ export default function ProjectDetail({ id }: { id: string }) {
     }
   };
 
+  const startEditingTitle = () => {
+    if (!project) return;
+    setEditTitle(project.title);
+    setIsEditingTitle(true);
+  };
+
+  const saveTitle = async () => {
+    if (!project || !editTitle.trim()) {
+      setIsEditingTitle(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editTitle.trim() }),
+      });
+
+      if (response.ok) {
+        setProject({ ...project, title: editTitle.trim() });
+      }
+    } catch (error) {
+      console.error("Failed to update title:", error);
+    }
+
+    setIsEditingTitle(false);
+  };
+
+  const downloadAudio = () => {
+    const link = document.createElement("a");
+    link.href = `/api/projects/${id}/audio`;
+    link.download = `${project?.title || "melody"}.webm`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div
@@ -109,9 +149,7 @@ export default function ProjectDetail({ id }: { id: string }) {
           gap: "1rem",
         }}
       >
-        <p style={{ color: "#2D1810", fontSize: "1.1rem" }}>
-          Idea not found
-        </p>
+        <p style={{ color: "#2D1810", fontSize: "1.1rem" }}>Idea not found</p>
         <button
           onClick={() => router.push("/")}
           style={{
@@ -169,19 +207,58 @@ export default function ProjectDetail({ id }: { id: string }) {
           ← Back to ideas
         </button>
 
-        {/* Title */}
-        <h1
-          style={{
-            fontFamily: "var(--font-heading)",
-            fontSize: "2rem",
-            fontWeight: "700",
-            color: "#2D1810",
-            marginTop: "1.5rem",
-            marginBottom: "0.5rem",
-          }}
-        >
-          {project.title}
-        </h1>
+        {/* Editable Title */}
+        {isEditingTitle ? (
+          <div style={{ marginTop: "1.5rem", marginBottom: "0.5rem" }}>
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveTitle();
+                if (e.key === "Escape") setIsEditingTitle(false);
+              }}
+              onBlur={saveTitle}
+              autoFocus
+              style={{
+                width: "100%",
+                fontFamily: "var(--font-heading)",
+                fontSize: "2rem",
+                fontWeight: "700",
+                color: "#2D1810",
+                border: "none",
+                borderBottom: "2px solid #E07A5F",
+                backgroundColor: "transparent",
+                outline: "none",
+                padding: "0.25rem 0",
+              }}
+            />
+          </div>
+        ) : (
+          <h1
+            onClick={startEditingTitle}
+            style={{
+              fontFamily: "var(--font-heading)",
+              fontSize: "2rem",
+              fontWeight: "700",
+              color: "#2D1810",
+              marginTop: "1.5rem",
+              marginBottom: "0.5rem",
+              cursor: "pointer",
+              borderBottom: "2px solid transparent",
+              transition: "border-color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderBottom = "2px dashed #E8D5C8";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderBottom = "2px solid transparent";
+            }}
+            title="Click to edit title"
+          >
+            {project.title}
+          </h1>
+        )}
 
         <p
           style={{
@@ -230,12 +307,7 @@ export default function ProjectDetail({ id }: { id: string }) {
                 <rect x="14" y="4" width="4" height="16" rx="1" />
               </svg>
             ) : (
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="white"
-              >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
                 <polygon points="6,3 20,12 6,21" />
               </svg>
             )}
@@ -250,6 +322,49 @@ export default function ProjectDetail({ id }: { id: string }) {
           >
             {formatTime(project.duration)}
           </p>
+
+          {/* Download button */}
+          <button
+            onClick={downloadAudio}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "0.6rem 1.25rem",
+              borderRadius: "10px",
+              border: "1.5px solid rgba(107, 58, 42, 0.15)",
+              backgroundColor: "transparent",
+              color: "#6B3A2A",
+              fontSize: "0.85rem",
+              cursor: "pointer",
+              fontFamily: "var(--font-body)",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#E07A5F";
+              e.currentTarget.style.color = "#E07A5F";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(107, 58, 42, 0.15)";
+              e.currentTarget.style.color = "#6B3A2A";
+            }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download Recording
+          </button>
         </div>
 
         {/* Details */}
@@ -274,20 +389,12 @@ export default function ProjectDetail({ id }: { id: string }) {
               }}
             >
               <span
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6B3A2A",
-                  opacity: 0.6,
-                }}
+                style={{ fontSize: "0.85rem", color: "#6B3A2A", opacity: 0.6 }}
               >
                 Mood
               </span>
               <span
-                style={{
-                  fontSize: "0.95rem",
-                  color: "#2D1810",
-                  fontWeight: "600",
-                }}
+                style={{ fontSize: "0.95rem", color: "#2D1810", fontWeight: "600" }}
               >
                 {project.mood}
               </span>
@@ -307,20 +414,12 @@ export default function ProjectDetail({ id }: { id: string }) {
               }}
             >
               <span
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6B3A2A",
-                  opacity: 0.6,
-                }}
+                style={{ fontSize: "0.85rem", color: "#6B3A2A", opacity: 0.6 }}
               >
                 Style
               </span>
               <span
-                style={{
-                  fontSize: "0.95rem",
-                  color: "#2D1810",
-                  fontWeight: "600",
-                }}
+                style={{ fontSize: "0.95rem", color: "#2D1810", fontWeight: "600" }}
               >
                 {project.style}
               </span>
@@ -340,20 +439,12 @@ export default function ProjectDetail({ id }: { id: string }) {
               }}
             >
               <span
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#6B3A2A",
-                  opacity: 0.6,
-                }}
+                style={{ fontSize: "0.85rem", color: "#6B3A2A", opacity: 0.6 }}
               >
                 Arrangement
               </span>
               <span
-                style={{
-                  fontSize: "0.95rem",
-                  color: "#2D1810",
-                  fontWeight: "600",
-                }}
+                style={{ fontSize: "0.95rem", color: "#2D1810", fontWeight: "600" }}
               >
                 {project.arrangement}
               </span>
