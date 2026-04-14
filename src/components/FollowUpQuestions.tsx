@@ -125,7 +125,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
                   cursor: "pointer",
                   fontSize: "0.95rem",
                   color: "#2D1810",
-                  fontFamily: "Georgia, serif",
+                  fontFamily: "var(--font-heading)",
                   transition: "all 0.2s ease",
                   display: "flex",
                   alignItems: "center",
@@ -195,7 +195,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
                   cursor: "pointer",
                   fontSize: "0.95rem",
                   color: "#2D1810",
-                  fontFamily: "Georgia, serif",
+                  fontFamily: "var(--font-heading)",
                   transition: "all 0.2s ease",
                   display: "flex",
                   alignItems: "center",
@@ -261,7 +261,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
                   backgroundColor: "#FFFDF9",
                   cursor: "pointer",
                   textAlign: "left",
-                  fontFamily: "Georgia, serif",
+                  fontFamily: "var(--font-heading)",
                   transition: "all 0.2s ease",
                   display: "flex",
                   alignItems: "center",
@@ -320,7 +320,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
           opacity: 0.6,
           cursor: "pointer",
           fontSize: "0.85rem",
-          fontFamily: "Georgia, serif",
+          fontFamily: "var(--font-heading)",
         }}
       >
         ← {step === 1 ? "Back to recording" : "Back"}

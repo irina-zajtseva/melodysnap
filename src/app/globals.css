@@ -1,33 +1,76 @@
 @import "tailwindcss";
 
-/* MelodySnap Design System */
 :root {
-  /* Warm, nostalgic palette */
   --color-cream: #FFF8F0;
   --color-warm-white: #FFFDF9;
   --color-peach: #FFDAB3;
   --color-amber: #E8985A;
   --color-rust: #C46A3A;
+  --color-coral: #E07A5F;
   --color-brown: #6B3A2A;
   --color-dark: #2D1810;
-  
-  /* Accent */
-  --color-coral: #E07A5F;
   --color-sage: #81B29A;
-  
-  /* Shadows */
+
   --shadow-soft: 0 2px 20px rgba(107, 58, 42, 0.08);
   --shadow-medium: 0 4px 30px rgba(107, 58, 42, 0.12);
   --shadow-record: 0 8px 40px rgba(196, 106, 58, 0.3);
+
+  --font-heading: 'Libre Baskerville', Georgia, serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
 }
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  font-family: 'Georgia', serif;
+  font-family: var(--font-body);
   background-color: var(--color-cream);
   color: var(--color-dark);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* // Subtle texture on the background */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(
+    circle at 25% 25%,
+    rgba(232, 152, 90, 0.03) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 75% 75%,
+    rgba(224, 122, 95, 0.03) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 8px rgba(224, 90, 90, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 16px rgba(224, 90, 90, 0.08);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

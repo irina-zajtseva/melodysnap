@@ -81,7 +81,7 @@ export default function RecordButton() {
   };
 
   return (
-    <div style={{ textAlign: "center", width: "100%", maxWidth: "400px" }}>
+    <div style={{ textAlign: "center", width: "100%", maxWidth: "400px", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
       {/* === IDLE STATE === */}
       {currentState === "idle" && (
         <>
@@ -123,7 +123,7 @@ export default function RecordButton() {
                 fontSize: "0.95rem",
                 fontWeight: "600",
                 color: "#E07A5F",
-                fontFamily: "Georgia, serif",
+                fontFamily: "var(--font-heading)",
               }}
             >
               Record Idea
@@ -176,7 +176,7 @@ export default function RecordButton() {
                 fontSize: "0.95rem",
                 fontWeight: "600",
                 color: "white",
-                fontFamily: "Georgia, serif",
+                fontFamily: "var(--font-heading)",
               }}
             >
               {formatTime(duration)}
@@ -245,7 +245,7 @@ export default function RecordButton() {
                 fontWeight: "600",
                 fontSize: "0.9rem",
                 cursor: "pointer",
-                fontFamily: "Georgia, serif",
+                fontFamily: "var(--font-heading)",
               }}
             >
               Try Again
@@ -261,7 +261,7 @@ export default function RecordButton() {
                 fontWeight: "600",
                 fontSize: "0.9rem",
                 cursor: "pointer",
-                fontFamily: "Georgia, serif",
+                fontFamily: "var(--font-heading)",
               }}
             >
               Keep This Idea

@@ -112,6 +112,7 @@ export default function ProjectList() {
           color: "#2D1810",
           fontWeight: "600",
           marginBottom: "0.5rem",
+          textAlign: "center"
         }}
       >
         Your Ideas
