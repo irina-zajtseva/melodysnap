@@ -1,7 +1,11 @@
 // src/components/RecordButton.tsx
 "use client";
 
+import { useState } from "react";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import FollowUpQuestions from "@/components/FollowUpQuestions";
+
+type AppState = "idle" | "recording" | "recorded" | "questions" | "saving";
 
 export default function RecordButton() {
   const {
@@ -14,16 +18,72 @@ export default function RecordButton() {
     resetRecording,
   } = useAudioRecorder();
 
+  const [appState, setAppState] = useState<AppState>("idle");
+
+  // Sync audio recorder status with app state
+  // (idle and recording come from the hook, the rest we manage)
+  const currentState =
+    appState === "questions" || appState === "saving"
+      ? appState
+      : status;
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
+  const handleKeepIdea = () => {
+    setAppState("questions");
+  };
+
+  const handleSave = async (preferences: {
+    mood: string;
+    style: string;
+    arrangement: string;
+  }) => {
+    if (!audioBlob) return;
+
+    setAppState("saving");
+
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "recording.webm");
+    formData.append("title", `${preferences.mood} ${preferences.style} idea`);
+    formData.append("duration", duration.toString());
+    formData.append("mood", preferences.mood);
+    formData.append("style", preferences.style);
+    formData.append("arrangement", preferences.arrangement);
+
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        resetRecording();
+        setAppState("idle");
+        window.location.reload();
+      } else {
+        alert("Failed to save. Try again!");
+        setAppState("questions");
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Failed to save. Try again!");
+      setAppState("questions");
+    }
+  };
+
+  const handleReset = () => {
+    resetRecording();
+    setAppState("idle");
+  };
+
   return (
-    <div style={{ textAlign: "center" }}>
+    <div style={{ textAlign: "center", width: "100%", maxWidth: "400px" }}>
       {/* === IDLE STATE === */}
-      {status === "idle" && (
+      {currentState === "idle" && (
         <>
           <button
             onClick={startRecording}
@@ -83,7 +143,7 @@ export default function RecordButton() {
       )}
 
       {/* === RECORDING STATE === */}
-      {status === "recording" && (
+      {currentState === "recording" && (
         <>
           <button
             onClick={stopRecording}
@@ -135,8 +195,8 @@ export default function RecordButton() {
         </>
       )}
 
-      {/* === RECORDED STATE === */}
-      {status === "recorded" && (
+      {/* === RECORDED STATE — Preview before questions === */}
+      {currentState === "recorded" && (
         <div
           style={{
             display: "flex",
@@ -175,7 +235,7 @@ export default function RecordButton() {
 
           <div style={{ display: "flex", gap: "1rem" }}>
             <button
-              onClick={resetRecording}
+              onClick={handleReset}
               style={{
                 padding: "0.75rem 1.5rem",
                 borderRadius: "12px",
@@ -191,48 +251,55 @@ export default function RecordButton() {
               Try Again
             </button>
             <button
-              onClick={async () => {
-              if (!audioBlob) return;
-
-              const formData = new FormData();
-              formData.append("audio", audioBlob, "recording.webm");
-              formData.append("title", "Untitled Idea");
-              formData.append("duration", duration.toString());
-
-    try {
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        alert("Idea saved! ✨");
-        resetRecording();
-        // Reload to show in project list
-        window.location.reload();
-      } else {
-        alert("Failed to save. Try again!");
-      }
-    } catch (error) {
-      console.error("Save error:", error);
-      alert("Failed to save. Try again!");
-    }
-  }}
-  style={{
-    padding: "0.75rem 1.5rem",
-    borderRadius: "12px",
-    border: "none",
-    backgroundColor: "#E07A5F",
-    color: "white",
-    fontWeight: "600",
-    fontSize: "0.9rem",
-    cursor: "pointer",
-    fontFamily: "Georgia, serif",
-  }}
->
-  Keep This Idea
-</button>
+              onClick={handleKeepIdea}
+              style={{
+                padding: "0.75rem 1.5rem",
+                borderRadius: "12px",
+                border: "none",
+                backgroundColor: "#E07A5F",
+                color: "white",
+                fontWeight: "600",
+                fontSize: "0.9rem",
+                cursor: "pointer",
+                fontFamily: "Georgia, serif",
+              }}
+            >
+              Keep This Idea
+            </button>
           </div>
+        </div>
+      )}
+
+      {/* === FOLLOW-UP QUESTIONS === */}
+      {currentState === "questions" && (
+        <FollowUpQuestions
+          onComplete={handleSave}
+          onBack={() => setAppState("recorded")}
+        />
+      )}
+
+      {/* === SAVING STATE === */}
+      {currentState === "saving" && (
+        <div style={{ textAlign: "center" }}>
+          <p
+            style={{
+              fontSize: "1.1rem",
+              color: "#2D1810",
+              fontWeight: "600",
+            }}
+          >
+            Saving your idea...
+          </p>
+          <p
+            style={{
+              fontSize: "0.85rem",
+              color: "#6B3A2A",
+              opacity: 0.6,
+              marginTop: "0.5rem",
+            }}
+          >
+            ✨ Creating your musical sketch
+          </p>
         </div>
       )}
     </div>

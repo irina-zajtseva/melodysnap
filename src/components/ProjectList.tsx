@@ -7,6 +7,9 @@ type Project = {
   id: string;
   title: string;
   duration: number;
+  mood: string;
+  style: string;
+  arrangement: string;
   createdAt: string;
 };
 
@@ -16,7 +19,6 @@ export default function ProjectList() {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
-  // Fetch projects when component loads
   useEffect(() => {
     fetch("/api/projects")
       .then((res) => res.json())
@@ -44,19 +46,16 @@ export default function ProjectList() {
   };
 
   const playProject = (id: string) => {
-    // Stop current audio if playing
     if (audio) {
-  audio.pause();
-}
+      audio.pause();
+    }
 
     if (playingId === id) {
-      // Toggle off
       setPlayingId(null);
       setAudio(null);
       return;
     }
 
-    // Play new audio
     const newAudio = new Audio(`/api/projects/${id}/audio`);
     newAudio.play();
     newAudio.onended = () => {
@@ -65,6 +64,28 @@ export default function ProjectList() {
     };
     setPlayingId(id);
     setAudio(newAudio);
+  };
+
+  const deleteProject = async (id: string) => {
+    // Stop audio if this project is playing
+    if (playingId === id && audio) {
+      audio.pause();
+      setPlayingId(null);
+      setAudio(null);
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // Remove from local state (no need to reload the page!)
+        setProjects((prev) => prev.filter((p) => p.id !== id));
+      }
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
   };
 
   if (loading) {
@@ -97,35 +118,37 @@ export default function ProjectList() {
       </h2>
 
       {projects.map((project) => (
-        <button
+        <div
           key={project.id}
-          onClick={() => playProject(project.id)}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "1rem",
+            gap: "0.75rem",
             padding: "1rem 1.25rem",
-            backgroundColor: playingId === project.id ? "#FFF0E6" : "#FFFDF9",
+            backgroundColor:
+              playingId === project.id ? "#FFF0E6" : "#FFFDF9",
             borderRadius: "12px",
             border: "1px solid rgba(107, 58, 42, 0.1)",
-            cursor: "pointer",
             width: "100%",
-            textAlign: "left",
             transition: "all 0.2s ease",
             boxShadow: "0 1px 4px rgba(107, 58, 42, 0.06)",
           }}
         >
-          {/* Play/Pause icon */}
-          <div
+          {/* Play/Pause button */}
+          <button
+            onClick={() => playProject(project.id)}
             style={{
               width: "40px",
               height: "40px",
               borderRadius: "50%",
-              backgroundColor: playingId === project.id ? "#E07A5F" : "#FFF0E6",
+              border: "none",
+              backgroundColor:
+                playingId === project.id ? "#E07A5F" : "#FFF0E6",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
+              cursor: "pointer",
             }}
           >
             {playingId === project.id ? (
@@ -134,11 +157,16 @@ export default function ProjectList() {
                 <rect x="14" y="4" width="4" height="16" rx="1" />
               </svg>
             ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#E07A5F">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="#E07A5F"
+              >
                 <polygon points="5,3 19,12 5,21" />
               </svg>
             )}
-          </div>
+          </button>
 
           {/* Project info */}
           <div style={{ flex: 1 }}>
@@ -160,11 +188,57 @@ export default function ProjectList() {
                 margin: "0.25rem 0 0 0",
               }}
             >
-              {formatTime(project.duration)} · {formatDate(project.createdAt)}
+              {project.mood && `${project.mood} · `}
+{project.style && `${project.style} · `}
+{formatTime(project.duration)} ·{" "}
+{formatDate(project.createdAt)}
             </p>
           </div>
-        </button>
+
+          {/* Delete button */}
+          <button
+            onClick={() => deleteProject(project.id)}
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "8px",
+              border: "none",
+              backgroundColor: "transparent",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: 0.4,
+              transition: "opacity 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "1";
+              e.currentTarget.style.backgroundColor = "#FEE2E2";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "0.4";
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+            title="Delete idea"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#E05A5A"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
+        </div>
       ))}
     </div>
   );
 }
+
+

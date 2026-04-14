@@ -25,14 +25,17 @@ export async function POST(request: NextRequest) {
 
     // Create the project document
     const project = {
-      id: nanoid(),
-      title,
-      audioData: base64Audio,
-      audioType: audioFile.type,
-      duration: Number(formData.get("duration")) || 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+  id: nanoid(),
+  title,
+  audioData: base64Audio,
+  audioType: audioFile.type,
+  duration: Number(formData.get("duration")) || 0,
+  mood: (formData.get("mood") as string) || "",
+  style: (formData.get("style") as string) || "",
+  arrangement: (formData.get("arrangement") as string) || "",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
 
     // Save to MongoDB
     const client = await clientPromise;
