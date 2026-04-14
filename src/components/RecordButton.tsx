@@ -38,17 +38,18 @@ export default function RecordButton() {
   };
 
   const handleSave = async (preferences: {
-    mood: string;
-    style: string;
-    arrangement: string;
-  }) => {
+  title: string;
+  mood: string;
+  style: string;
+  arrangement: string;
+}) => {
     if (!audioBlob) return;
 
     setAppState("saving");
 
     const formData = new FormData();
     formData.append("audio", audioBlob, "recording.webm");
-    formData.append("title", `${preferences.mood} ${preferences.style} idea`);
+    formData.append("title", preferences.title);
     formData.append("duration", duration.toString());
     formData.append("mood", preferences.mood);
     formData.append("style", preferences.style);

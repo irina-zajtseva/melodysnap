@@ -74,3 +74,32 @@ body::before {
     transform: translateY(0);
   }
 }
+
+/* Mobile-friendly touch targets */
+button {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+input {
+  font-size: 16px; /* Prevents iOS zoom on input focus */
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Safe area for phones with notches */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Small screens */
+@media (max-width: 400px) {
+  h1 {
+    font-size: 2rem !important;
+  }
+}
+

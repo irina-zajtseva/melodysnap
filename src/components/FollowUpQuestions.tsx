@@ -4,6 +4,7 @@
 import { useState } from "react";
 
 type Preferences = {
+  title: string;
   mood: string;
   style: string;
   arrangement: string;
@@ -43,13 +44,38 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
   const [mood, setMood] = useState("");
   const [style, setStyle] = useState("");
   const [arrangement, setArrangement] = useState("");
+  const [title, setTitle] = useState("");
 
-  const handleComplete = (selectedArrangement: string) => {
+  const handleComplete = () => {
     onComplete({
+      title: title.trim() || `${mood} ${style} idea`,
       mood,
       style,
-      arrangement: selectedArrangement,
+      arrangement,
     });
+  };
+
+  // Shared button style for option cards
+  const optionStyle = {
+    padding: "1rem",
+    borderRadius: "12px",
+    border: "2px solid rgba(107, 58, 42, 0.1)",
+    backgroundColor: "#FFFDF9",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    color: "#2D1810",
+    fontFamily: "var(--font-heading)",
+    transition: "all 0.2s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5rem",
+  };
+
+  const handleOptionHover = (e: React.MouseEvent, entering: boolean) => {
+    const el = e.currentTarget as HTMLElement;
+    el.style.borderColor = entering ? "#E07A5F" : "rgba(107, 58, 42, 0.1)";
+    el.style.backgroundColor = entering ? "#FFF0E6" : "#FFFDF9";
   };
 
   return (
@@ -65,11 +91,11 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
     >
       {/* Progress indicator */}
       <div style={{ display: "flex", gap: "0.5rem" }}>
-        {[1, 2, 3].map((s) => (
+        {[1, 2, 3, 4].map((s) => (
           <div
             key={s}
             style={{
-              width: "40px",
+              width: "32px",
               height: "4px",
               borderRadius: "2px",
               backgroundColor: s <= step ? "#E07A5F" : "#E8D5C8",
@@ -88,6 +114,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
               color: "#2D1810",
               fontWeight: "600",
               marginBottom: "0.5rem",
+              fontFamily: "var(--font-heading)",
             }}
           >
             What mood are you feeling?
@@ -102,7 +129,6 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
           >
             This helps shape the musical direction
           </p>
-
           <div
             style={{
               display: "grid",
@@ -117,29 +143,9 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
                   setMood(m.label);
                   setStep(2);
                 }}
-                style={{
-                  padding: "1rem",
-                  borderRadius: "12px",
-                  border: "2px solid rgba(107, 58, 42, 0.1)",
-                  backgroundColor: "#FFFDF9",
-                  cursor: "pointer",
-                  fontSize: "0.95rem",
-                  color: "#2D1810",
-                  fontFamily: "var(--font-heading)",
-                  transition: "all 0.2s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.5rem",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#E07A5F";
-                  e.currentTarget.style.backgroundColor = "#FFF0E6";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(107, 58, 42, 0.1)";
-                  e.currentTarget.style.backgroundColor = "#FFFDF9";
-                }}
+                style={optionStyle}
+                onMouseEnter={(e) => handleOptionHover(e, true)}
+                onMouseLeave={(e) => handleOptionHover(e, false)}
               >
                 <span style={{ fontSize: "1.2rem" }}>{m.emoji}</span>
                 {m.label}
@@ -158,6 +164,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
               color: "#2D1810",
               fontWeight: "600",
               marginBottom: "0.5rem",
+              fontFamily: "var(--font-heading)",
             }}
           >
             What style fits this idea?
@@ -172,7 +179,6 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
           >
             You picked: {mood}
           </p>
-
           <div
             style={{
               display: "grid",
@@ -187,29 +193,9 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
                   setStyle(s.label);
                   setStep(3);
                 }}
-                style={{
-                  padding: "1rem",
-                  borderRadius: "12px",
-                  border: "2px solid rgba(107, 58, 42, 0.1)",
-                  backgroundColor: "#FFFDF9",
-                  cursor: "pointer",
-                  fontSize: "0.95rem",
-                  color: "#2D1810",
-                  fontFamily: "var(--font-heading)",
-                  transition: "all 0.2s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.5rem",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#E07A5F";
-                  e.currentTarget.style.backgroundColor = "#FFF0E6";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(107, 58, 42, 0.1)";
-                  e.currentTarget.style.backgroundColor = "#FFFDF9";
-                }}
+                style={optionStyle}
+                onMouseEnter={(e) => handleOptionHover(e, true)}
+                onMouseLeave={(e) => handleOptionHover(e, false)}
               >
                 <span style={{ fontSize: "1.2rem" }}>{s.emoji}</span>
                 {s.label}
@@ -228,6 +214,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
               color: "#2D1810",
               fontWeight: "600",
               marginBottom: "0.5rem",
+              fontFamily: "var(--font-heading)",
             }}
           >
             Choose an arrangement
@@ -242,7 +229,6 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
           >
             {mood} · {style}
           </p>
-
           <div
             style={{
               display: "flex",
@@ -253,28 +239,19 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
             {ARRANGEMENTS.map((a) => (
               <button
                 key={a.label}
-                onClick={() => handleComplete(a.label)}
+                onClick={() => {
+                  setArrangement(a.label);
+                  setStep(4);
+                }}
                 style={{
+                  ...optionStyle,
                   padding: "1.25rem",
-                  borderRadius: "12px",
-                  border: "2px solid rgba(107, 58, 42, 0.1)",
-                  backgroundColor: "#FFFDF9",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontFamily: "var(--font-heading)",
-                  transition: "all 0.2s ease",
-                  display: "flex",
-                  alignItems: "center",
+                  textAlign: "left" as const,
+                  justifyContent: "flex-start",
                   gap: "1rem",
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#E07A5F";
-                  e.currentTarget.style.backgroundColor = "#FFF0E6";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(107, 58, 42, 0.1)";
-                  e.currentTarget.style.backgroundColor = "#FFFDF9";
-                }}
+                onMouseEnter={(e) => handleOptionHover(e, true)}
+                onMouseLeave={(e) => handleOptionHover(e, false)}
               >
                 <span style={{ fontSize: "1.5rem" }}>{a.emoji}</span>
                 <div>
@@ -305,6 +282,88 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
         </div>
       )}
 
+      {/* Step 4: Name your idea */}
+      {step === 4 && (
+        <div style={{ textAlign: "center", width: "100%" }}>
+          <h2
+            style={{
+              fontSize: "1.3rem",
+              color: "#2D1810",
+              fontWeight: "600",
+              marginBottom: "0.5rem",
+              fontFamily: "var(--font-heading)",
+            }}
+          >
+            Name your idea
+          </h2>
+          <p
+            style={{
+              fontSize: "0.85rem",
+              color: "#6B3A2A",
+              opacity: 0.6,
+              marginBottom: "1.5rem",
+            }}
+          >
+            {mood} · {style} · {arrangement}
+          </p>
+
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={`${mood} ${style} idea`}
+            style={{
+              width: "100%",
+              padding: "1rem 1.25rem",
+              borderRadius: "12px",
+              border: "2px solid rgba(107, 58, 42, 0.15)",
+              backgroundColor: "#FFFDF9",
+              fontSize: "1rem",
+              color: "#2D1810",
+              fontFamily: "var(--font-body)",
+              outline: "none",
+              textAlign: "center",
+              marginBottom: "1.5rem",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "#E07A5F";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "rgba(107, 58, 42, 0.15)";
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleComplete();
+            }}
+            autoFocus
+          />
+
+          <button
+            onClick={handleComplete}
+            style={{
+              padding: "0.85rem 2rem",
+              borderRadius: "12px",
+              border: "none",
+              backgroundColor: "#E07A5F",
+              color: "white",
+              fontWeight: "600",
+              fontSize: "1rem",
+              cursor: "pointer",
+              fontFamily: "var(--font-heading)",
+              width: "100%",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#C46A3A";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#E07A5F";
+            }}
+          >
+            Save My Idea ✨
+          </button>
+        </div>
+      )}
+
       {/* Back button */}
       <button
         onClick={() => {
@@ -320,7 +379,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
           opacity: 0.6,
           cursor: "pointer",
           fontSize: "0.85rem",
-          fontFamily: "var(--font-heading)",
+          fontFamily: "var(--font-body)",
         }}
       >
         ← {step === 1 ? "Back to recording" : "Back"}

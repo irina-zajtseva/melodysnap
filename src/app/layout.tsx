@@ -23,6 +23,13 @@ export const metadata: Metadata = {
   title: "MelodySnap — Capture a melody, hear it become a song",
   description:
     "A nostalgic songwriting companion. Hum, sing, or whistle your ideas and turn them into playable songs.",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

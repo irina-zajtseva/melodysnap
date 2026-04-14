@@ -2,6 +2,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 type Project = {
   id: string;
@@ -19,6 +21,8 @@ export default function ProjectList() {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
+  const router = useRouter();
+
   useEffect(() => {
     fetch("/api/projects")
       .then((res) => res.json())
@@ -29,13 +33,13 @@ export default function ProjectList() {
       .catch(() => setLoading(false));
   }, []);
 
-  const formatTime = (seconds: number) => {
+    const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  const formatDate = (dateString: string) => {
+    const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -169,32 +173,35 @@ export default function ProjectList() {
             )}
           </button>
 
-          {/* Project info */}
-          <div style={{ flex: 1 }}>
-            <p
-              style={{
+          {/* Project info — clickable */}
+            <div
+              style={{ flex: 1, cursor: "pointer" }}
+              onClick={() => router.push(`/project/${project.id}`)}
+            >
+               <p
+                style={{
                 fontSize: "0.95rem",
                 fontWeight: "600",
                 color: "#2D1810",
                 margin: 0,
-              }}
-            >
-              {project.title}
-            </p>
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "#6B3A2A",
-                opacity: 0.6,
-                margin: "0.25rem 0 0 0",
-              }}
-            >
-              {project.mood && `${project.mood} · `}
-{project.style && `${project.style} · `}
-{formatTime(project.duration)} ·{" "}
-{formatDate(project.createdAt)}
-            </p>
-          </div>
+                }}
+                >
+       {project.title}
+       </p>
+       <p
+          style={{
+          fontSize: "0.8rem",
+          color: "#6B3A2A",
+          opacity: 0.6,
+          margin: "0.25rem 0 0 0",
+          }}
+        >
+          {project.mood && `${project.mood} · `}
+          {project.style && `${project.style} · `}
+          {formatTime(project.duration)} ·{" "}
+          {formatDate(project.createdAt)}
+        </p>
+</div>
 
           {/* Delete button */}
           <button
