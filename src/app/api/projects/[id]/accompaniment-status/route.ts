@@ -31,6 +31,10 @@ export async function GET(
       return NextResponse.json({ status: "finished" });
     }
 
+    if (project.accompanimentStatus === "failed") {
+      return NextResponse.json({ status: "failed" });
+    }
+
     // Check PoYo status
     const queryResponse = await fetch(
       `${POYO_QUERY_URL}?task_id=${project.accompanimentTaskId}`,
