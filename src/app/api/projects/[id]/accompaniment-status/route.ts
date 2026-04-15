@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
-const POYO_QUERY_URL = "https://api.poyo.ai/uni/query";
+const POYO_QUERY_URL = "https://api.poyo.ai/api/generate/detail/music";
 
 export async function GET(
   request: NextRequest,
@@ -19,7 +19,6 @@ export async function GET(
           _id: 0,
           accompanimentTaskId: 1,
           accompanimentStatus: 1,
-          accompanimentGeneratedAt: 1,
         },
       }
     );
@@ -28,7 +27,6 @@ export async function GET(
       return NextResponse.json({ status: "none" });
     }
 
-    // Already done — audio is saved
     if (project.accompanimentStatus === "finished") {
       return NextResponse.json({ status: "finished" });
     }
@@ -45,20 +43,13 @@ export async function GET(
 
     const queryData = await queryResponse.json();
     console.log("PoYo status:", queryData.data?.status);
-    console.log("PoYo full response:", JSON.stringify(queryData.data));
 
     if (queryData.data?.status === "finished") {
-      // Find the audio URL in the response
-      const outputData = queryData.data.output || queryData.data;
-      const audioUrl =
-        outputData.audio_url ||
-        outputData.url ||
-        outputData.audio?.[0]?.url ||
-        outputData.audio?.[0]?.audio_url ||
-        (Array.isArray(outputData) ? outputData[0]?.audio_url : null);
+      // Get audio URL from files array
+      const files = queryData.data.files;
+      const audioUrl = files?.[0]?.audio_url;
 
       if (audioUrl) {
-        // Download and save to MongoDB
         const audioResponse = await fetch(audioUrl);
         if (audioResponse.ok) {
           const audioBuffer = await audioResponse.arrayBuffer();
@@ -81,8 +72,7 @@ export async function GET(
         }
       }
 
-      // Audio URL not found — log for debugging
-      console.error("Could not find audio URL in:", JSON.stringify(queryData.data));
+      console.error("No audio URL in files:", JSON.stringify(queryData.data.files));
       return NextResponse.json({ status: "finished_no_audio" });
     }
 
@@ -94,7 +84,6 @@ export async function GET(
       return NextResponse.json({ status: "failed" });
     }
 
-    // Still processing
     return NextResponse.json({ status: "processing" });
   } catch (error: unknown) {
     if (error instanceof Error) {
