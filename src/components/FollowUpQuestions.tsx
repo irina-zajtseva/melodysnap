@@ -15,47 +15,63 @@ type Props = {
   onBack: () => void;
 };
 
-const MOODS = [
-  { label: "Happy", emoji: "😊" },
-  { label: "Sad", emoji: "😢" },
-  { label: "Dreamy", emoji: "🌙" },
-  { label: "Energetic", emoji: "⚡" },
-  { label: "Romantic", emoji: "💕" },
-  { label: "Dramatic", emoji: "🎭" },
-];
+// 1-to-1-to-1 mapping from spec
+const MOOD_MAP: Record<string, { emoji: string; style: string; arrangement: string; description: string }> = {
+  Happy: {
+    emoji: "😊",
+    style: "Pop",
+    arrangement: "Acoustic Guitar",
+    description: "Bright pop with acoustic guitar",
+  },
+  Sad: {
+    emoji: "😢",
+    style: "Piano Ballad",
+    arrangement: "Piano",
+    description: "Emotional piano ballad",
+  },
+  Romantic: {
+    emoji: "💕",
+    style: "Acoustic",
+    arrangement: "Fingerpicked Guitar",
+    description: "Warm acoustic fingerpicking",
+  },
+  Epic: {
+    emoji: "🔥",
+    style: "Orchestral",
+    arrangement: "Full Band",
+    description: "Powerful orchestral full band",
+  },
+  Angry: {
+    emoji: "😤",
+    style: "Rock",
+    arrangement: "Full Band",
+    description: "Intense rock full band",
+  },
+  Dreamy: {
+    emoji: "🌙",
+    style: "Indie Folk",
+    arrangement: "Soft Band",
+    description: "Soft indie folk band",
+  },
+};
 
-const STYLES = [
-  { label: "Acoustic", emoji: "🎸" },
-  { label: "Piano Ballad", emoji: "🎹" },
-  { label: "Folk", emoji: "🪕" },
-  { label: "Rock", emoji: "🎸" },
-  { label: "Cinematic", emoji: "🎬" },
-  { label: "Pop", emoji: "🎤" },
-];
-
-const ARRANGEMENTS = [
-  { label: "Guitar", emoji: "🎸", description: "Simple guitar strumming" },
-  { label: "Piano", emoji: "🎹", description: "Piano backing" },
-  { label: "Soft Band", emoji: "🎵", description: "Gentle full arrangement" },
-];
+const MOODS = Object.keys(MOOD_MAP);
 
 export default function FollowUpQuestions({ onComplete, onBack }: Props) {
   const [step, setStep] = useState(1);
   const [mood, setMood] = useState("");
-  const [style, setStyle] = useState("");
-  const [arrangement, setArrangement] = useState("");
   const [title, setTitle] = useState("");
 
   const handleComplete = () => {
+    const mapping = MOOD_MAP[mood];
     onComplete({
-      title: title.trim() || `${mood} ${style} idea`,
+      title: title.trim() || `${mood} ${mapping.style} idea`,
       mood,
-      style,
-      arrangement,
+      style: mapping.style,
+      arrangement: mapping.arrangement,
     });
   };
 
-  // Shared button style for option cards
   const optionStyle = {
     padding: "1rem",
     borderRadius: "12px",
@@ -68,8 +84,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
     transition: "all 0.2s ease",
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
-    gap: "0.5rem",
+    gap: "0.75rem",
   };
 
   const handleOptionHover = (e: React.MouseEvent, entering: boolean) => {
@@ -89,13 +104,13 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
         width: "100%",
       }}
     >
-      {/* Progress indicator */}
+      {/* Progress indicator — now just 2 steps */}
       <div style={{ display: "flex", gap: "0.5rem" }}>
-        {[1, 2, 3, 4].map((s) => (
+        {[1, 2].map((s) => (
           <div
             key={s}
             style={{
-              width: "32px",
+              width: "48px",
               height: "4px",
               borderRadius: "2px",
               backgroundColor: s <= step ? "#E07A5F" : "#E8D5C8",
@@ -105,7 +120,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
         ))}
       </div>
 
-      {/* Step 1: Mood */}
+      {/* Step 1: Mood (auto-assigns style + arrangement) */}
       {step === 1 && (
         <div style={{ textAlign: "center", width: "100%" }}>
           <h2
@@ -127,107 +142,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
               marginBottom: "1.5rem",
             }}
           >
-            This helps shape the musical direction
-          </p>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "0.75rem",
-            }}
-          >
-            {MOODS.map((m) => (
-              <button
-                key={m.label}
-                onClick={() => {
-                  setMood(m.label);
-                  setStep(2);
-                }}
-                style={optionStyle}
-                onMouseEnter={(e) => handleOptionHover(e, true)}
-                onMouseLeave={(e) => handleOptionHover(e, false)}
-              >
-                <span style={{ fontSize: "1.2rem" }}>{m.emoji}</span>
-                {m.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Step 2: Style */}
-      {step === 2 && (
-        <div style={{ textAlign: "center", width: "100%" }}>
-          <h2
-            style={{
-              fontSize: "1.3rem",
-              color: "#2D1810",
-              fontWeight: "600",
-              marginBottom: "0.5rem",
-              fontFamily: "var(--font-heading)",
-            }}
-          >
-            What style fits this idea?
-          </h2>
-          <p
-            style={{
-              fontSize: "0.85rem",
-              color: "#6B3A2A",
-              opacity: 0.6,
-              marginBottom: "1.5rem",
-            }}
-          >
-            You picked: {mood}
-          </p>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "0.75rem",
-            }}
-          >
-            {STYLES.map((s) => (
-              <button
-                key={s.label}
-                onClick={() => {
-                  setStyle(s.label);
-                  setStep(3);
-                }}
-                style={optionStyle}
-                onMouseEnter={(e) => handleOptionHover(e, true)}
-                onMouseLeave={(e) => handleOptionHover(e, false)}
-              >
-                <span style={{ fontSize: "1.2rem" }}>{s.emoji}</span>
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Arrangement */}
-      {step === 3 && (
-        <div style={{ textAlign: "center", width: "100%" }}>
-          <h2
-            style={{
-              fontSize: "1.3rem",
-              color: "#2D1810",
-              fontWeight: "600",
-              marginBottom: "0.5rem",
-              fontFamily: "var(--font-heading)",
-            }}
-          >
-            Choose an arrangement
-          </h2>
-          <p
-            style={{
-              fontSize: "0.85rem",
-              color: "#6B3A2A",
-              opacity: 0.6,
-              marginBottom: "1.5rem",
-            }}
-          >
-            {mood} · {style}
+            This shapes everything — style, instruments, and feel
           </p>
           <div
             style={{
@@ -236,24 +151,23 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
               gap: "0.75rem",
             }}
           >
-            {ARRANGEMENTS.map((a) => (
+            {MOODS.map((m) => (
               <button
-                key={a.label}
+                key={m}
                 onClick={() => {
-                  setArrangement(a.label);
-                  setStep(4);
+                  setMood(m);
+                  setStep(2);
                 }}
                 style={{
                   ...optionStyle,
                   padding: "1.25rem",
                   textAlign: "left" as const,
                   justifyContent: "flex-start",
-                  gap: "1rem",
                 }}
                 onMouseEnter={(e) => handleOptionHover(e, true)}
                 onMouseLeave={(e) => handleOptionHover(e, false)}
               >
-                <span style={{ fontSize: "1.5rem" }}>{a.emoji}</span>
+                <span style={{ fontSize: "1.5rem" }}>{MOOD_MAP[m].emoji}</span>
                 <div>
                   <p
                     style={{
@@ -263,7 +177,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
                       margin: 0,
                     }}
                   >
-                    {a.label}
+                    {m}
                   </p>
                   <p
                     style={{
@@ -273,7 +187,7 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
                       margin: "0.25rem 0 0 0",
                     }}
                   >
-                    {a.description}
+                    {MOOD_MAP[m].description}
                   </p>
                 </div>
               </button>
@@ -282,8 +196,8 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
         </div>
       )}
 
-      {/* Step 4: Name your idea */}
-      {step === 4 && (
+      {/* Step 2: Name your idea */}
+      {step === 2 && (
         <div style={{ textAlign: "center", width: "100%" }}>
           <h2
             style={{
@@ -304,14 +218,14 @@ export default function FollowUpQuestions({ onComplete, onBack }: Props) {
               marginBottom: "1.5rem",
             }}
           >
-            {mood} · {style} · {arrangement}
+            {MOOD_MAP[mood]?.emoji} {mood} · {MOOD_MAP[mood]?.style} · {MOOD_MAP[mood]?.arrangement}
           </p>
 
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={`${mood} ${style} idea`}
+            placeholder={`${mood} ${MOOD_MAP[mood]?.style} idea`}
             style={{
               width: "100%",
               padding: "1rem 1.25rem",

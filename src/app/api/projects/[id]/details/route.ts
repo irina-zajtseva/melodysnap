@@ -15,7 +15,7 @@ export async function GET(
     // Get project WITHOUT the heavy audio data
     const project = await db
       .collection("projects")
-      .findOne({ id }, { projection: { audioData: 0, generatedAudio: 0, _id: 0 } });
+      .findOne({ id }, { projection: { audioData: 0, generatedAudio: 0, accompanimentAudio: 0, _id: 0 } });
 
     if (!project) {
       return NextResponse.json(

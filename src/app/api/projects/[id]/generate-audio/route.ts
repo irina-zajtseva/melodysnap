@@ -45,19 +45,46 @@ export async function POST(
     const audioDataUri = `data:${project.audioType};base64,${project.audioData}`;
 
     // 3. Build the text prompt from user preferences
-    const prompt = `${project.mood} ${project.style} ${project.arrangement} arrangement, warm and inspiring, high quality`;
+    // Build a precise prompt based on the mood mapping
+    let musicPrompt = "";
+    switch (project.mood) {
+      case "Happy":
+        musicPrompt = "uplifting pop song, acoustic guitar, bright and catchy, clean and accessible";
+        break;
+      case "Sad":
+        musicPrompt = "slow emotional piano ballad, expressive piano, melancholic and reflective, no drums";
+        break;
+      case "Romantic":
+        musicPrompt = "warm acoustic song, fingerpicked guitar, intimate and tender, gentle and organic";
+        break;
+      case "Epic":
+        musicPrompt = "powerful orchestral arrangement, full band with drums and strings, cinematic and dramatic";
+        break;
+      case "Angry":
+        musicPrompt = "intense rock song, full band with electric guitar and heavy drums, forceful and energetic";
+        break;
+      case "Dreamy":
+        musicPrompt = "soft indie folk song, gentle band with acoustic instruments, nostalgic and floating, soft percussion";
+        break;
+      default:
+        musicPrompt = "warm musical arrangement, high quality";
+    }
+
+    const prompt = `${musicPrompt}, follow the melody closely, high quality`;
 
     console.log("Generating audio with prompt:", prompt);
 
     // 4. Call MusicGen Melody via Replicate
     const output = await replicate.run("meta/musicgen:671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb", {
-      input: {
+     input: {
         model_version: "stereo-melody-large",
         prompt: prompt,
         input_audio: audioDataUri,
         duration: 15,
         output_format: "wav",
         normalization_strategy: "loudness",
+        classifier_free_guidance: 3,
+        temperature: 1,
       },
     });
 
