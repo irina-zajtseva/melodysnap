@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
 const POYO_API_URL = "https://api.poyo.ai/api/generate/submit";
-const POYO_QUERY_URL = "https://api.poyo.ai/uni/query";
 
 export async function POST(
   request: NextRequest,
@@ -11,7 +10,6 @@ export async function POST(
   try {
     const { id } = await params;
 
-    // 1. Fetch project from DB
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     const project = await db.collection("projects").findOne(
@@ -23,7 +21,6 @@ export async function POST(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    // 2. Build tags based on mood mapping
     let tags = "";
     let negativeTags = "";
     switch (project.mood) {
@@ -56,12 +53,8 @@ export async function POST(
         negativeTags = "noise, harsh";
     }
 
-    // 3. The public URL for the audio file (served from Vercel)
     const audioUrl = `https://melodysnap.vercel.app/api/projects/${id}/audio`;
 
-    console.log("Submitting to PoYo:", { tags, negativeTags, audioUrl });
-
-    // 4. Submit task to PoYo
     const submitResponse = await fetch(POYO_API_URL, {
       method: "POST",
       headers: {
@@ -86,75 +79,23 @@ export async function POST(
       throw new Error(`PoYo submit failed: ${JSON.stringify(submitData)}`);
     }
 
-    const taskId = submitData.data.task_id;
-
-    // 5. Poll for completion (max 3 minutes)
-    let result = null;
-    const maxAttempts = 36; // 36 * 5s = 3 minutes
-    for (let i = 0; i < maxAttempts; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      const queryResponse = await fetch(
-        `${POYO_QUERY_URL}?task_id=${taskId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.POYO_API_KEY}`,
-          },
-        }
-      );
-
-      const queryData = await queryResponse.json();
-      console.log(`Poll ${i + 1}:`, queryData.data?.status);
-
-      if (queryData.data?.status === "finished") {
-        result = queryData.data;
-        break;
-      }
-
-      if (queryData.data?.status === "failed") {
-        throw new Error("PoYo generation failed");
-      }
-    }
-
-    if (!result) {
-      throw new Error("Generation timed out");
-    }
-
-    // 6. Get the audio URL from the result
-    // PoYo returns audio URLs in the response
-    const generatedUrl =
-      result.output?.audio_url ||
-      result.output?.url ||
-      result.audio_url ||
-      result.url;
-
-    if (!generatedUrl) {
-      console.log("Full PoYo result:", JSON.stringify(result));
-      throw new Error("No audio URL in response");
-    }
-
-    // 7. Download the generated audio and save to MongoDB
-    const audioResponse = await fetch(generatedUrl);
-    if (!audioResponse.ok) {
-      throw new Error("Failed to download generated audio");
-    }
-
-    const audioBuffer = await audioResponse.arrayBuffer();
-    const generatedAudioBase64 = Buffer.from(audioBuffer).toString("base64");
-
+    // Save task_id to MongoDB — don't wait for completion
     await db.collection("projects").updateOne(
       { id },
       {
         $set: {
-          accompanimentAudio: generatedAudioBase64,
-          accompanimentAudioType: "audio/mp3",
-          accompanimentGeneratedAt: new Date(),
+          accompanimentTaskId: submitData.data.task_id,
+          accompanimentStatus: "processing",
           updatedAt: new Date(),
         },
       }
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      taskId: submitData.data.task_id,
+      status: "processing",
+    });
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Accompaniment error:", error.message);
@@ -162,7 +103,7 @@ export async function POST(
       console.error("Accompaniment error:", error);
     }
     return NextResponse.json(
-      { error: "Failed to generate accompaniment. Please try again." },
+      { error: "Failed to submit. Please try again." },
       { status: 500 }
     );
   }

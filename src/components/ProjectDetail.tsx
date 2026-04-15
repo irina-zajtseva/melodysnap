@@ -179,11 +179,32 @@ export default function ProjectDetail({ id }: { id: string }) {
     setIsAddingAccompaniment(true);
     setAccompanimentError("");
     try {
+      // Step 1: Submit the task
       const res = await fetch(`/api/projects/${id}/add-accompaniment`, {
         method: "POST",
       });
-      if (!res.ok) throw new Error("Failed");
-      setAccompanimentExists(true);
+      if (!res.ok) throw new Error("Submit failed");
+
+      // Step 2: Poll for completion from the browser
+      const maxAttempts = 36; // 36 * 5s = 3 minutes
+      for (let i = 0; i < maxAttempts; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const statusRes = await fetch(`/api/projects/${id}/accompaniment-status`);
+        const statusData = await statusRes.json();
+
+        if (statusData.status === "finished") {
+          setAccompanimentExists(true);
+          setIsAddingAccompaniment(false);
+          return;
+        }
+
+        if (statusData.status === "failed" || statusData.status === "error") {
+          throw new Error("Generation failed");
+        }
+      }
+
+      throw new Error("Timed out");
     } catch {
       setAccompanimentError("Something went wrong. Please try again!");
     } finally {
