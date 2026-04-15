@@ -28,6 +28,11 @@ export default function ProjectDetail({ id }: { id: string }) {
   const [generatedAudioExists, setGeneratedAudioExists] = useState(false);
   const [isPlayingGenerated, setIsPlayingGenerated] = useState(false);
   const [generatedAudio, setGeneratedAudio] = useState<HTMLAudioElement | null>(null);
+  const [isAddingAccompaniment, setIsAddingAccompaniment] = useState(false);
+  const [accompanimentError, setAccompanimentError] = useState("");
+  const [accompanimentExists, setAccompanimentExists] = useState(false);
+  const [isPlayingAccompaniment, setIsPlayingAccompaniment] = useState(false);
+  const [accompanimentAudio, setAccompanimentAudio] = useState<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     fetch(`/api/projects/${id}/details`)
@@ -38,6 +43,9 @@ export default function ProjectDetail({ id }: { id: string }) {
         // Check if generated audio exists
         if (data.project?.generatedAt) {
           setGeneratedAudioExists(true);
+        }
+        if (data.project?.accompanimentGeneratedAt) {
+          setAccompanimentExists(true);
         }
       })
       .catch(() => setLoading(false));
@@ -167,6 +175,39 @@ export default function ProjectDetail({ id }: { id: string }) {
     setGeneratedAudio(newAudio);
   };
 
+  const addAccompaniment = async () => {
+    setIsAddingAccompaniment(true);
+    setAccompanimentError("");
+    try {
+      const res = await fetch(`/api/projects/${id}/add-accompaniment`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed");
+      setAccompanimentExists(true);
+    } catch {
+      setAccompanimentError("Something went wrong. Please try again!");
+    } finally {
+      setIsAddingAccompaniment(false);
+    }
+  };
+
+  const toggleAccompanimentPlay = () => {
+    if (isPlayingAccompaniment && accompanimentAudio) {
+      accompanimentAudio.pause();
+      setIsPlayingAccompaniment(false);
+      return;
+    }
+
+    const newAudio = new Audio(`/api/projects/${id}/accompaniment-audio`);
+    newAudio.play();
+    newAudio.onended = () => {
+      setIsPlayingAccompaniment(false);
+      setAccompanimentAudio(null);
+    };
+    setIsPlayingAccompaniment(true);
+    setAccompanimentAudio(newAudio);
+  };
+
   if (loading) {
     return (
       <div
@@ -181,6 +222,8 @@ export default function ProjectDetail({ id }: { id: string }) {
       </div>
     );
   }
+
+  
 
   if (!project) {
     return (
@@ -603,6 +646,116 @@ export default function ProjectDetail({ id }: { id: string }) {
               fontSize: "0.85rem",
             }}>
               {generateError}
+            </p>
+          )}
+        </div>
+
+        {/* Add Accompaniment */}
+        <div style={{
+          backgroundColor: "#FFFDF9",
+          borderRadius: "16px",
+          padding: "2rem",
+          boxShadow: "0 4px 30px rgba(107, 58, 42, 0.12)",
+          marginBottom: "2rem",
+        }}>
+          <h2 style={{
+            fontFamily: "'Libre Baskerville', serif",
+            fontSize: "1.3rem",
+            color: "#2D1810",
+            marginBottom: "0.5rem",
+          }}>
+            🎸 Add Accompaniment
+          </h2>
+          <p style={{
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: "0.85rem",
+            color: "#6B3A2A",
+            opacity: 0.7,
+            marginBottom: "1.5rem",
+          }}>
+            Keep your melody, add instruments underneath
+          </p>
+
+          {accompanimentExists && (
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "1rem",
+              marginBottom: "1.5rem",
+            }}>
+              <button
+                onClick={toggleAccompanimentPlay}
+                style={{
+                  width: "64px",
+                  height: "64px",
+                  borderRadius: "50%",
+                  border: "none",
+                  backgroundColor: isPlayingAccompaniment ? "#E05A5A" : "#6B8F71",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 4px 20px rgba(107, 143, 113, 0.3)",
+                }}
+              >
+                {isPlayingAccompaniment ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <rect x="6" y="4" width="4" height="16" rx="1" />
+                    <rect x="14" y="4" width="4" height="16" rx="1" />
+                  </svg>
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <polygon points="6,3 20,12 6,21" />
+                  </svg>
+                )}
+              </button>
+              <span style={{
+                fontFamily: "'Nunito', sans-serif",
+                fontSize: "0.8rem",
+                color: "#6B3A2A",
+                opacity: 0.6,
+              }}>
+                Your melody + accompaniment
+              </span>
+            </div>
+          )}
+
+          <button
+            onClick={addAccompaniment}
+            disabled={isAddingAccompaniment}
+            style={{
+              width: "100%",
+              padding: "14px 24px",
+              backgroundColor: isAddingAccompaniment ? "#A8C5AB" : "#6B8F71",
+              color: "#FFFDF9",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "0.95rem",
+              fontFamily: "'Nunito', sans-serif",
+              fontWeight: 700,
+              cursor: isAddingAccompaniment ? "not-allowed" : "pointer",
+              transition: "background-color 0.2s",
+              touchAction: "manipulation",
+            }}
+          >
+            {isAddingAccompaniment
+              ? "🎵 Adding instruments... (1-2 min)"
+              : accompanimentExists
+              ? "🔄 Regenerate Accompaniment"
+              : "🎸 Add Instruments to My Melody"}
+          </button>
+
+          {accompanimentError && (
+            <p style={{
+              color: "#C46A3A",
+              textAlign: "center",
+              marginTop: "12px",
+              fontFamily: "'Nunito', sans-serif",
+              fontSize: "0.85rem",
+            }}>
+              {accompanimentError}
             </p>
           )}
         </div>
