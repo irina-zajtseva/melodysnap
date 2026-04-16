@@ -81,11 +81,22 @@ export async function GET(
     }
 
     if (queryData.data?.status === "failed") {
+      const errorMsg = queryData.data?.error_message || "Generation failed";
+      console.error("PoYo task failed:", errorMsg);
+      
       await db.collection("projects").updateOne(
         { id },
-        { $set: { accompanimentStatus: "failed" } }
+        { 
+          $set: { 
+            accompanimentStatus: "failed",
+            accompanimentError: errorMsg,
+          } 
+        }
       );
-      return NextResponse.json({ status: "failed" });
+      return NextResponse.json({ 
+        status: "failed",
+        error: errorMsg,
+      });
     }
 
     return NextResponse.json({ status: "processing" });

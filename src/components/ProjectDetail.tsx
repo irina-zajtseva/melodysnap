@@ -185,8 +185,8 @@ export default function ProjectDetail({ id }: { id: string }) {
       });
       if (!res.ok) throw new Error("Submit failed");
 
-      // Step 2: Poll for completion from the browser
-      const maxAttempts = 36; // 36 * 5s = 3 minutes
+      // Step 2: Poll for completion
+      const maxAttempts = 36;
       for (let i = 0; i < maxAttempts; i++) {
         await new Promise((resolve) => setTimeout(resolve, 5000));
 
@@ -199,14 +199,41 @@ export default function ProjectDetail({ id }: { id: string }) {
           return;
         }
 
-        if (statusData.status === "failed" || statusData.status === "error") {
-          throw new Error("Generation failed");
+        if (statusData.status === "failed") {
+          // Check if it's a PoYo server error
+          const errorMsg = statusData.error || "";
+          if (errorMsg.toLowerCase().includes("server")) {
+            throw new Error("server_error");
+          }
+          throw new Error("generation_failed");
+        }
+
+        if (statusData.status === "error") {
+          throw new Error("network_error");
         }
       }
 
-      throw new Error("Timed out");
-    } catch {
-      setAccompanimentError("Something went wrong. Please try again!");
+      throw new Error("timeout");
+    } catch (err) {
+      const errorType = err instanceof Error ? err.message : "unknown";
+      
+      if (errorType === "server_error") {
+        setAccompanimentError(
+          "🔧 Our music AI service is temporarily down. Please try again in a few minutes!"
+        );
+      } else if (errorType === "timeout") {
+        setAccompanimentError(
+          "⏰ This is taking longer than expected. Please try again."
+        );
+      } else if (errorType === "network_error") {
+        setAccompanimentError(
+          "📡 Connection issue. Please check your internet and try again."
+        );
+      } else {
+        setAccompanimentError(
+          "Something went wrong. Please try again in a moment!"
+        );
+      }
     } finally {
       setIsAddingAccompaniment(false);
     }
