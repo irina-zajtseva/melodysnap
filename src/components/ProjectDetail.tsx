@@ -200,9 +200,10 @@ export default function ProjectDetail({ id }: { id: string }) {
         }
 
         if (statusData.status === "failed") {
-          // Check if it's a PoYo server error
-          const errorMsg = statusData.error || "";
-          if (errorMsg.toLowerCase().includes("server")) {
+          const errorType = statusData.errorType || "";
+          if (errorType === "copyright") {
+            throw new Error("copyright");
+          } else if (errorType === "server") {
             throw new Error("server_error");
           }
           throw new Error("generation_failed");
@@ -216,8 +217,12 @@ export default function ProjectDetail({ id }: { id: string }) {
       throw new Error("timeout");
     } catch (err) {
       const errorType = err instanceof Error ? err.message : "unknown";
-      
-      if (errorType === "server_error") {
+
+      if (errorType === "copyright") {
+        setAccompanimentError(
+          "🎵 The AI detected a similarity to an existing song. Try humming something more original!"
+        );
+      } else if (errorType === "server_error") {
         setAccompanimentError(
           "🔧 Our music AI service is temporarily down. Please try again in a few minutes!"
         );

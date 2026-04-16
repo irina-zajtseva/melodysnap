@@ -84,6 +84,15 @@ export async function GET(
       const errorMsg = queryData.data?.error_message || "Generation failed";
       console.error("PoYo task failed:", errorMsg);
       
+      // Detect error type
+      let errorType = "unknown";
+      const msgLower = errorMsg.toLowerCase();
+      if (msgLower.includes("copyright") || msgLower.includes("conflict")) {
+        errorType = "copyright";
+      } else if (msgLower.includes("server")) {
+        errorType = "server";
+      }
+      
       await db.collection("projects").updateOne(
         { id },
         { 
@@ -96,6 +105,7 @@ export async function GET(
       return NextResponse.json({ 
         status: "failed",
         error: errorMsg,
+        errorType: errorType,
       });
     }
 
