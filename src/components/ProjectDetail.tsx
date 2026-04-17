@@ -23,11 +23,6 @@ export default function ProjectDetail({ id }: { id: string }) {
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generateError, setGenerateError] = useState("");
-  const [generatedAudioExists, setGeneratedAudioExists] = useState(false);
-  const [isPlayingGenerated, setIsPlayingGenerated] = useState(false);
-  const [generatedAudio, setGeneratedAudio] = useState<HTMLAudioElement | null>(null);
   const [isAddingAccompaniment, setIsAddingAccompaniment] = useState(false);
   const [accompanimentError, setAccompanimentError] = useState("");
   const [accompanimentExists, setAccompanimentExists] = useState(false);
@@ -41,9 +36,6 @@ export default function ProjectDetail({ id }: { id: string }) {
         setProject(data.project || null);
         setLoading(false);
         // Check if generated audio exists
-        if (data.project?.generatedAt) {
-          setGeneratedAudioExists(true);
-        }
         if (data.project?.accompanimentGeneratedAt) {
           setAccompanimentExists(true);
         }
@@ -138,41 +130,6 @@ export default function ProjectDetail({ id }: { id: string }) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const generateAudio = async () => {
-    setIsGenerating(true);
-    setGenerateError("");
-    try {
-      const res = await fetch(`/api/projects/${id}/generate-audio`, {
-        method: "POST",
-      });
-      if (!res.ok) {
-        throw new Error("Generation failed");
-      }
-      setGeneratedAudioExists(true);
-    } catch {
-      setGenerateError("Something went wrong. Please try again!");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const toggleGeneratedPlay = () => {
-    if (isPlayingGenerated && generatedAudio) {
-      generatedAudio.pause();
-      setIsPlayingGenerated(false);
-      return;
-    }
-
-    const newAudio = new Audio(`/api/projects/${id}/generated-audio`);
-    newAudio.play();
-    newAudio.onended = () => {
-      setIsPlayingGenerated(false);
-      setGeneratedAudio(null);
-    };
-    setIsPlayingGenerated(true);
-    setGeneratedAudio(newAudio);
   };
 
   const addAccompaniment = async () => {
@@ -372,6 +329,7 @@ export default function ProjectDetail({ id }: { id: string }) {
                 backgroundColor: "transparent",
                 outline: "none",
                 padding: "0.25rem 0",
+                textAlign: "center",
               }}
             />
           </div>
@@ -388,6 +346,7 @@ export default function ProjectDetail({ id }: { id: string }) {
               cursor: "pointer",
               borderBottom: "2px solid transparent",
               transition: "border-color 0.2s ease",
+              textAlign: "center",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderBottom = "2px dashed #E8D5C8";
@@ -407,6 +366,7 @@ export default function ProjectDetail({ id }: { id: string }) {
             color: "#6B3A2A",
             opacity: 0.6,
             marginBottom: "2rem",
+            textAlign: "center",
           }}
         >
           {formatDate(project.createdAt)}
@@ -593,116 +553,6 @@ export default function ProjectDetail({ id }: { id: string }) {
           )}
         </div>
 
-        {/* AI Music Generator */}
-        <div style={{
-          backgroundColor: "#FFFDF9",
-          borderRadius: "16px",
-          padding: "2rem",
-          boxShadow: "0 4px 30px rgba(107, 58, 42, 0.12)",
-          marginBottom: "2rem",
-        }}>
-          <h2 style={{
-            fontFamily: "'Libre Baskerville', serif",
-            fontSize: "1.3rem",
-            color: "#2D1810",
-            marginBottom: "0.5rem",
-          }}>
-            🎵 Hear Your Melody
-          </h2>
-          <p style={{
-            fontFamily: "'Nunito', sans-serif",
-            fontSize: "0.85rem",
-            color: "#6B3A2A",
-            opacity: 0.7,
-            marginBottom: "1.5rem",
-          }}>
-            AI will arrange your hummed idea into a {project.arrangement?.toLowerCase() || "musical"} piece
-          </p>
-
-          {generatedAudioExists && (
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "1rem",
-              marginBottom: "1.5rem",
-            }}>
-              <button
-                onClick={toggleGeneratedPlay}
-                style={{
-                  width: "64px",
-                  height: "64px",
-                  borderRadius: "50%",
-                  border: "none",
-                  backgroundColor: isPlayingGenerated ? "#E05A5A" : "#E8985A",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.2s ease",
-                  boxShadow: "0 4px 20px rgba(232, 152, 90, 0.3)",
-                }}
-              >
-                {isPlayingGenerated ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                    <rect x="6" y="4" width="4" height="16" rx="1" />
-                    <rect x="14" y="4" width="4" height="16" rx="1" />
-                  </svg>
-                ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                    <polygon points="6,3 20,12 6,21" />
-                  </svg>
-                )}
-              </button>
-              <span style={{
-                fontFamily: "'Nunito', sans-serif",
-                fontSize: "0.8rem",
-                color: "#6B3A2A",
-                opacity: 0.6,
-              }}>
-                AI-generated version
-              </span>
-            </div>
-          )}
-
-          <button
-            onClick={generateAudio}
-            disabled={isGenerating}
-            style={{
-              width: "100%",
-              padding: "14px 24px",
-              backgroundColor: isGenerating ? "#D4A887" : "#E8985A",
-              color: "#FFFDF9",
-              border: "none",
-              borderRadius: "12px",
-              fontSize: "0.95rem",
-              fontFamily: "'Nunito', sans-serif",
-              fontWeight: 700,
-              cursor: isGenerating ? "not-allowed" : "pointer",
-              transition: "background-color 0.2s",
-              touchAction: "manipulation",
-            }}
-          >
-            {isGenerating
-              ? "🎹 Creating your music... (30-60s)"
-              : generatedAudioExists
-              ? "🔄 Regenerate Music"
-              : "✨ Generate Music from My Melody"}
-          </button>
-
-          {generateError && (
-            <p style={{
-              color: "#C46A3A",
-              textAlign: "center",
-              marginTop: "12px",
-              fontFamily: "'Nunito', sans-serif",
-              fontSize: "0.85rem",
-            }}>
-              {generateError}
-            </p>
-          )}
-        </div>
-
         {/* Add Accompaniment */}
         <div style={{
           backgroundColor: "#FFFDF9",
@@ -716,6 +566,7 @@ export default function ProjectDetail({ id }: { id: string }) {
             fontSize: "1.3rem",
             color: "#2D1810",
             marginBottom: "0.5rem",
+            textAlign: "center",
           }}>
             🎸 Add Accompaniment
           </h2>
@@ -725,6 +576,7 @@ export default function ProjectDetail({ id }: { id: string }) {
             color: "#6B3A2A",
             opacity: 0.7,
             marginBottom: "1.5rem",
+            textAlign: "center",
           }}>
             Keep your melody, add instruments underneath
           </p>
@@ -772,6 +624,45 @@ export default function ProjectDetail({ id }: { id: string }) {
               }}>
                 Your melody + accompaniment
               </span>
+              <button
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = `/api/projects/${id}/accompaniment-audio`;
+                  link.download = `${project?.title || "melody"}-accompaniment.mp3`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.5rem 1rem",
+                  borderRadius: "10px",
+                  border: "1.5px solid rgba(107, 143, 113, 0.3)",
+                  backgroundColor: "transparent",
+                  color: "#6B8F71",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  fontFamily: "'Nunito', sans-serif",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "#6B8F71";
+                  e.currentTarget.style.backgroundColor = "#F0F7F1";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(107, 143, 113, 0.3)";
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download
+              </button>
             </div>
           )}
 
@@ -814,7 +705,9 @@ export default function ProjectDetail({ id }: { id: string }) {
         </div>
 
         {/* AI Song Ideas (chords, lyrics, etc.) */}
-        <SongDisplay projectId={id} initialSongData={null} />
+        <div style={{ marginBottom: "1.5rem" }}>
+          <SongDisplay projectId={id} initialSongData={null} />
+        </div>
 
         {/* Delete button */}
         <button
