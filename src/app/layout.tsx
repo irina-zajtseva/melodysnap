@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   description:
     "A nostalgic songwriting companion. Hum, sing, or whistle your ideas and turn them into playable songs.",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  manifest: "/manifest.json",
 };
 
 export const viewport = {
