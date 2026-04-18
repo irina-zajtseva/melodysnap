@@ -1,8 +1,41 @@
 // src/app/page.tsx
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/AuthContext";
 import RecordButton from "@/components/RecordButton";
 import ProjectList from "@/components/ProjectList";
 
 export default function Home() {
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+
+  // Redirect to login if not signed in
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth");
+    }
+  }, [user, loading, router]);
+
+  // Show nothing while checking auth
+  if (loading || !user) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <p style={{ color: "#E8985A", fontFamily: "'Nunito', sans-serif" }}>
+          Loading...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <main
       style={{
@@ -14,7 +47,6 @@ export default function Home() {
         zIndex: 1,
       }}
     >
-      {/* Single container for consistent alignment */}
       <div
         style={{
           width: "100%",
@@ -57,6 +89,52 @@ export default function Home() {
           >
             Capture a melody. Hear it become a song.
           </p>
+
+          {/* Welcome + Sign Out */}
+          <div
+            style={{
+              marginTop: "1rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'Nunito', sans-serif",
+                fontSize: "0.85rem",
+                color: "#6B3A2A",
+              }}
+            >
+              Hi, {user.name}!
+            </span>
+            <button
+              onClick={logout}
+              style={{
+                padding: "0.3rem 0.8rem",
+                borderRadius: "8px",
+                border: "1.5px solid rgba(107, 58, 42, 0.15)",
+                backgroundColor: "transparent",
+                color: "#6B3A2A",
+                fontSize: "0.75rem",
+                cursor: "pointer",
+                fontFamily: "'Nunito', sans-serif",
+                opacity: 0.6,
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "1";
+                e.currentTarget.style.borderColor = "#E07A5F";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "0.6";
+                e.currentTarget.style.borderColor = "rgba(107, 58, 42, 0.15)";
+              }}
+            >
+              Sign Out
+            </button>
+          </div>
         </header>
 
         {/* Main Content */}

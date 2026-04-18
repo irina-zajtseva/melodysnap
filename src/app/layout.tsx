@@ -1,4 +1,5 @@
 // src/app/layout.tsx
+import { AuthProvider } from "@/components/AuthContext";
 import type { Metadata } from "next";
 import { Libre_Baskerville, Nunito } from "next/font/google";
 import "./globals.css";
@@ -43,7 +44,9 @@ export default function RootLayout({
       <body
         className={`${libreBaskerville.variable} ${nunito.variable}`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
