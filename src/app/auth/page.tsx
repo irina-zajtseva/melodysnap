@@ -14,8 +14,49 @@ export default function AuthPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const validateEmail = (email: string): boolean => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = async () => {
     setError("");
+
+    // Validate email
+    if (!email.trim()) {
+      setError("Please enter your email");
+      return;
+    }
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    // Validate password
+    if (!password) {
+      setError("Please enter your password");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    // Register-only validations
+    if (!isLogin) {
+      if (!name.trim()) {
+        setError("Please enter your name");
+        return;
+      }
+      if (name.trim().length < 2) {
+        setError("Name must be at least 2 characters");
+        return;
+      }
+      if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+        setError("Password must include at least one uppercase letter and one number");
+        return;
+      }
+    }
+
     setLoading(true);
 
     let result: string | null;
@@ -23,11 +64,6 @@ export default function AuthPage() {
     if (isLogin) {
       result = await login(email, password);
     } else {
-      if (!name.trim()) {
-        setError("Please enter your name");
-        setLoading(false);
-        return;
-      }
       result = await register(name, email, password);
     }
 
