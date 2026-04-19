@@ -633,45 +633,108 @@ export default function ProjectDetail({ id }: { id: string }) {
               }}>
                 Your melody + accompaniment
               </span>
-              <button
-                onClick={() => {
-                  const link = document.createElement("a");
-                  link.href = `/api/projects/${id}/accompaniment-audio`;
-                  link.download = `${project?.title || "melody"}-accompaniment.mp3`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "10px",
-                  border: "1.5px solid rgba(107, 143, 113, 0.3)",
-                  backgroundColor: "transparent",
-                  color: "#6B8F71",
-                  fontSize: "0.8rem",
-                  cursor: "pointer",
-                  fontFamily: "'Nunito', sans-serif",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#6B8F71";
-                  e.currentTarget.style.backgroundColor = "#F0F7F1";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(107, 143, 113, 0.3)";
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Download
-              </button>
+              <div style={{
+                display: "flex",
+                gap: "0.75rem",
+                justifyContent: "center",
+              }}>
+                <button
+                  onClick={() => {
+                    const link = document.createElement("a");
+                    link.href = `/api/projects/${id}/accompaniment-audio`;
+                    link.download = `${project?.title || "melody"}-accompaniment.mp3`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "10px",
+                    border: "1.5px solid rgba(107, 143, 113, 0.3)",
+                    backgroundColor: "transparent",
+                    color: "#6B8F71",
+                    fontSize: "0.8rem",
+                    cursor: "pointer",
+                    fontFamily: "'Nunito', sans-serif",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#6B8F71";
+                    e.currentTarget.style.backgroundColor = "#F0F7F1";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(107, 143, 113, 0.3)";
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Download
+                </button>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/projects/${id}/accompaniment-audio`);
+                      const blob = await response.blob();
+                      const file = new File([blob], `${project?.title || "melody"}-accompaniment.mp3`, { type: "audio/mp3" });
+
+                      if (navigator.share && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                          title: `${project?.title} — MelodySnap`,
+                          text: "Listen to my melody with AI accompaniment! 🎵",
+                          files: [file],
+                        });
+                      } else {
+                        // Fallback: copy link
+                        await navigator.clipboard.writeText(
+                          `Check out my melody "${project?.title}" on MelodySnap! 🎵`
+                        );
+                        alert("Copied to clipboard! Paste it anywhere to share.");
+                      }
+                    } catch (err) {
+                      console.error("Share failed:", err);
+                    }
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "10px",
+                    border: "1.5px solid rgba(107, 143, 113, 0.3)",
+                    backgroundColor: "transparent",
+                    color: "#6B8F71",
+                    fontSize: "0.8rem",
+                    cursor: "pointer",
+                    fontFamily: "'Nunito', sans-serif",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#6B8F71";
+                    e.currentTarget.style.backgroundColor = "#F0F7F1";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(107, 143, 113, 0.3)";
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3" />
+                    <circle cx="6" cy="12" r="3" />
+                    <circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  </svg>
+                  Share
+                </button>
+              </div>
             </div>
           )}
 
