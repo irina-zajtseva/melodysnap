@@ -68,6 +68,7 @@ export async function POST(
           title: project.title || "My Melody",
           tags: tags,
           negative_tags: negativeTags,
+          mv: "V5",
         },
       }),
     });
