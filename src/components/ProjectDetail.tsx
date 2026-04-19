@@ -556,7 +556,7 @@ export default function ProjectDetail({ id }: { id: string }) {
               <span
                 style={{ fontSize: "0.95rem", color: "#2D1810", fontWeight: "600" }}
               >
-                {project.arrangement}
+                {project.arrangement?.split("|")[0] || project.arrangement}
               </span>
             </div>
           )}

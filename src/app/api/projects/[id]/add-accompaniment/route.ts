@@ -21,36 +21,31 @@ export async function POST(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    let tags = "";
-    let negativeTags = "";
+    // Extract tags from arrangement field (format: "Label|tags")
+    const arrangementParts = (project.arrangement || "").split("|");
+    const tags = arrangementParts[1] || "warm, musical, acoustic";
+    
+    // Build negative tags based on mood
+    let negativeTags = "noise, harsh, distorted";
     switch (project.mood) {
       case "Happy":
-        tags = "uplifting pop, acoustic guitar, bright, catchy, cheerful";
-        negativeTags = "heavy metal, sad, dark, aggressive";
+        negativeTags = "sad, dark, aggressive, heavy metal, depressing";
         break;
       case "Sad":
-        tags = "emotional piano ballad, slow, melancholic, reflective, expressive piano";
-        negativeTags = "upbeat, fast drums, rock, aggressive";
+        negativeTags = "upbeat, party, aggressive, fast, dance";
         break;
       case "Romantic":
-        tags = "warm acoustic, fingerpicked guitar, intimate, tender, gentle";
-        negativeTags = "heavy drums, rock, aggressive, fast";
+        negativeTags = "aggressive, heavy, loud, fast, harsh";
         break;
       case "Epic":
-        tags = "orchestral, full band, cinematic, dramatic, powerful, strings, brass";
-        negativeTags = "quiet, minimal, lo-fi";
+        negativeTags = "quiet, minimal, lo-fi, gentle, soft";
         break;
       case "Angry":
-        tags = "rock, full band, electric guitar, heavy drums, intense, forceful";
-        negativeTags = "soft, gentle, quiet, piano ballad";
+        negativeTags = "soft, gentle, quiet, romantic, peaceful";
         break;
       case "Dreamy":
-        tags = "indie folk, soft band, acoustic, nostalgic, floating, gentle percussion";
-        negativeTags = "heavy metal, aggressive, loud drums";
+        negativeTags = "heavy metal, aggressive, loud, harsh, fast";
         break;
-      default:
-        tags = "warm, musical, acoustic";
-        negativeTags = "noise, harsh";
     }
 
     const audioUrl = `https://melodysnap.vercel.app/api/projects/${id}/audio`;
