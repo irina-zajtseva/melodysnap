@@ -16,7 +16,6 @@ export function useAudioRecorder(maxDuration: number = 120) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  // Helper function to clear the timer
   const clearTimer = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -24,7 +23,6 @@ export function useAudioRecorder(maxDuration: number = 120) {
     }
   };
 
-  // Helper function to stop the media recorder
   const stopMediaRecorder = () => {
     if (
       mediaRecorderRef.current &&
@@ -41,7 +39,24 @@ export function useAudioRecorder(maxDuration: number = 120) {
         audio: true,
       });
 
-      const mediaRecorder = new MediaRecorder(stream);
+      // Detect supported audio format
+      let mimeType = "audio/webm";
+      if (MediaRecorder.isTypeSupported("audio/webm")) {
+        mimeType = "audio/webm";
+      } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+        mimeType = "audio/mp4";
+      } else if (MediaRecorder.isTypeSupported("audio/mpeg")) {
+        mimeType = "audio/mpeg";
+      } else {
+        mimeType = "";
+      }
+
+      const mediaRecorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+
+      const actualMimeType = mediaRecorder.mimeType || mimeType || "audio/webm";
+
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -52,7 +67,7 @@ export function useAudioRecorder(maxDuration: number = 120) {
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const blob = new Blob(chunksRef.current, { type: actualMimeType });
         const url = URL.createObjectURL(blob);
         setAudioBlob(blob);
         setAudioURL(url);
