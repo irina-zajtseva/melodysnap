@@ -11,6 +11,10 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotMessage, setForgotMessage] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -73,6 +77,28 @@ export default function AuthPage() {
       setError(result);
     } else {
       router.push("/");
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setForgotMessage("");
+    if (!forgotEmail.trim() || !validateEmail(forgotEmail)) {
+      setForgotMessage("Please enter a valid email address");
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      setForgotMessage(data.message || data.error || "Check your email!");
+    } catch {
+      setForgotMessage("Something went wrong. Please try again.");
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -307,6 +333,124 @@ export default function AuthPage() {
               }}
             />
           </div>
+
+          {/* Forgot Password Link */}
+          {isLogin && !forgotMode && (
+            <button
+              onClick={() => {
+                setForgotMode(true);
+                setForgotEmail(email);
+                setError("");
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#E07A5F",
+                fontSize: "0.8rem",
+                cursor: "pointer",
+                fontFamily: "'Nunito', sans-serif",
+                marginBottom: "1rem",
+                display: "block",
+                width: "100%",
+                textAlign: "center",
+              }}
+            >
+              Forgot your password?
+            </button>
+          )}
+
+          {/* Forgot Password Form */}
+          {forgotMode && (
+            <div style={{
+              marginBottom: "1rem",
+              padding: "1rem",
+              backgroundColor: "#FFF8F0",
+              borderRadius: "10px",
+            }}>
+              <p style={{
+                fontFamily: "'Nunito', sans-serif",
+                fontSize: "0.85rem",
+                color: "#6B3A2A",
+                marginBottom: "0.75rem",
+                textAlign: "center",
+              }}>
+                Enter your email to receive a reset link
+              </p>
+              <input
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                placeholder="you@example.com"
+                style={{
+                  width: "100%",
+                  padding: "0.75rem 1rem",
+                  borderRadius: "10px",
+                  border: "2px solid rgba(107, 58, 42, 0.12)",
+                  backgroundColor: "#FFFDF9",
+                  fontSize: "0.95rem",
+                  color: "#2D1810",
+                  fontFamily: "'Nunito', sans-serif",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  marginBottom: "0.75rem",
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#E07A5F"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(107, 58, 42, 0.12)"; }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleForgotPassword(); }}
+              />
+              <button
+                onClick={handleForgotPassword}
+                disabled={forgotLoading}
+                style={{
+                  width: "100%",
+                  padding: "0.7rem",
+                  borderRadius: "10px",
+                  border: "none",
+                  backgroundColor: forgotLoading ? "#D4A887" : "#E8985A",
+                  color: "#FFFDF9",
+                  fontWeight: 600,
+                  fontSize: "0.9rem",
+                  cursor: forgotLoading ? "not-allowed" : "pointer",
+                  fontFamily: "'Nunito', sans-serif",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                {forgotLoading ? "Sending..." : "Send Reset Link"}
+              </button>
+              {forgotMessage && (
+                <p style={{
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: "0.8rem",
+                  color: forgotMessage.includes("Check") || forgotMessage.includes("receive") ? "#6B8F71" : "#C46A3A",
+                  textAlign: "center",
+                  marginTop: "0.5rem",
+                }}>
+                  {forgotMessage}
+                </p>
+              )}
+              <button
+                onClick={() => {
+                  setForgotMode(false);
+                  setForgotMessage("");
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#6B3A2A",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  fontFamily: "'Nunito', sans-serif",
+                  display: "block",
+                  width: "100%",
+                  textAlign: "center",
+                  opacity: 0.6,
+                  marginTop: "0.5rem",
+                }}
+              >
+                ← Back to Sign In
+              </button>
+            </div>
+          )}
 
           {/* Error message */}
           {error && (
