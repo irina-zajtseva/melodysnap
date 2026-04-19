@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SongDisplay from "./SongDisplay";
+import { useAuth } from "./AuthContext";
 
 type Project = {
   id: string;
@@ -17,6 +18,14 @@ type Project = {
 
 export default function ProjectDetail({ id }: { id: string }) {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
+  // Redirect to login if not signed in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/auth");
+    }
+  }, [user, authLoading, router]);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -218,7 +227,7 @@ export default function ProjectDetail({ id }: { id: string }) {
     setAccompanimentAudio(newAudio);
   };
 
-  if (loading) {
+  if (loading || authLoading || !user) {
     return (
       <div
         style={{
